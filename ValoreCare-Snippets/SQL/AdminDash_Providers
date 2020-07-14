@@ -1,0 +1,196 @@
+
+ALTER PROC [dbo].[AdminDash_Providers]
+AS
+
+/* --Update Jonathan McCary 6/23/20--
+
+EXEC [dbo].[AdminDash_Providers]
+*/
+
+    BEGIN
+
+	DECLARE @Table1 dbo.SignUpsByDate;
+	DECLARE @Table2 dbo.SignUpsByDate;
+	DECLARE @Table3 dbo.SignUpsByDate;
+	DECLARE @Table4 dbo.SignUpsByDate;
+	DECLARE @Table5 dbo.SignUpsByDate;
+	DECLARE @Table6 dbo.SignUpsByDate;
+	DECLARE @Table7 dbo.SignUpsByDate;
+	DECLARE @Table8 dbo.SignUpsByDate;
+	DECLARE @Table9 dbo.SignUpsByDate;
+
+	INSERT INTO @Table1
+	EXECUTE dbo.AdminDash_UsersByDate
+	INSERT INTO @Table2
+	EXECUTE dbo.AdminDash_ProvidersByDate
+	INSERT INTO @Table3
+	EXECUTE dbo.AdminDash_SeekersByDate
+	INSERT INTO @Table4
+	EXECUTE dbo.AdminDash_UsersThisMonth
+	INSERT INTO @Table5
+	EXECUTE dbo.AdminDash_ProvidersThisMonth
+	INSERT INTO @Table6
+	EXECUTE dbo.AdminDash_SeekersThisMonth
+	INSERT INTO @Table7
+	EXECUTE dbo.AdminDash_UsersThisWeek
+	INSERT INTO @Table8
+	EXECUTE dbo.AdminDash_ProvidersThisWeek
+	INSERT INTO @Table9
+	EXECUTE dbo.AdminDash_SeekersThisWeek
+
+        SELECT
+        (
+          SELECT COUNT ( DISTINCT SeekerId )
+  FROM [C87ValoreCare].[dbo].[Appointments]
+        ) AS PayingSeekers, 
+        (
+            SELECT COUNT(1)
+            FROM [C87ValoreCare].[dbo].[StripeSubscriptions]
+			WHERE IsSubscriptionActive = 1
+        ) AS ActiveSubscriptions, 
+        (
+            SELECT
+            (
+                SELECT COUNT(1)
+                FROM [dbo].[Users] AS U
+                     JOIN [dbo].[UserRoles] AS UR ON UR.[UserId] = U.[Id]
+                     JOIN [dbo].[Roles] AS R ON R.[Id] = UR.RoleId
+                WHERE RoleId = 1
+            ) AS admins, 
+            (
+                SELECT COUNT(1)
+                FROM [dbo].[Users] AS U
+                     JOIN [dbo].[UserRoles] AS UR ON UR.[UserId] = U.[Id]
+                     JOIN [dbo].[Roles] AS R ON R.[Id] = UR.RoleId
+                WHERE RoleId = 2
+            ) AS providers, 
+            (
+                SELECT COUNT(1)
+                FROM [dbo].[Users] AS U
+                     JOIN [dbo].[UserRoles] AS UR ON UR.[UserId] = U.[Id]
+                     JOIN [dbo].[Roles] AS R ON R.[Id] = UR.RoleId
+                WHERE RoleId = 3
+            ) AS seekers, 
+            (
+                SELECT COUNT(1)
+                FROM [dbo].[Users] AS U
+                     JOIN [dbo].[UserRoles] AS UR ON UR.[UserId] = U.[Id]
+                     JOIN [dbo].[Roles] AS R ON R.[Id] = UR.RoleId
+                WHERE RoleId = 4
+            ) AS bloggers FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+        ) AS TotalUsers, 
+        (
+            SELECT TOP (5) [Id], 
+                           [UserId], 
+                           [FirstName], 
+                           [LastName], 
+                           [Mi], 
+                           [AvatarUrl], 
+                           [DateCreated], 
+                           [DateModified]
+            FROM [C87ValoreCare].[dbo].[UserProfiles]
+            ORDER BY [DateCreated] DESC FOR JSON PATH
+        ) AS LastUsers, 
+        (
+            SELECT TOP (5) Up.[Id], 
+                           Up.[UserId], 
+                           Up.[FirstName], 
+                           Up.[LastName], 
+                           Up.[Mi], 
+                           Up.[AvatarUrl], 
+                           Up.[DateCreated], 
+                           Up.[DateModified]
+            FROM [C87ValoreCare].[dbo].[UserProfiles] AS Up
+                 JOIN dbo.UserRoles AS Ur ON Up.UserId = Ur.UserId
+                 JOIN dbo.Roles AS R ON Ur.RoleId = R.Id
+            WHERE R.Id = 2
+            ORDER BY [DateCreated] DESC FOR JSON PATH
+        ) AS LastProviders, 
+        (
+            SELECT TOP (5) Up.[Id], 
+                           Up.[UserId], 
+                           Up.[FirstName], 
+                           Up.[LastName], 
+                           Up.[Mi], 
+                           Up.[AvatarUrl], 
+                           Up.[DateCreated], 
+                           Up.[DateModified]
+            FROM [C87ValoreCare].[dbo].[UserProfiles] AS Up
+                 JOIN dbo.UserRoles AS Ur ON Up.UserId = Ur.UserId
+                 JOIN dbo.Roles AS R ON Ur.RoleId = R.Id
+            WHERE R.Id = 3
+            ORDER BY [DateCreated] DESC FOR JSON PATH
+        ) AS LastSeekers, 
+        (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table1
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS UsersAllTime, 
+         (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table2
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS ProvidersAllTime, 
+        (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table3
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS SeekersAllTime, 
+		 (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table4
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS UsersThisMonth, 
+		 (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table5
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS ProvidersThisMonth, 
+		 (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table6
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS SeekersThisMonth, 
+		 (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table7
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS UsersThisWeek, 
+		 (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table8
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS ProvidersThisWeek, 
+		 (
+           SELECT SignUps, 
+               [Date], 
+               SUM(SignUps) OVER(
+               ORDER BY [Date]) TotalToDate
+        FROM @Table9
+		ORDER BY [Date] ASC FOR JSON PATH
+        ) AS SeekersThisWeek
+    END;

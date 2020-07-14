@@ -1,0 +1,16 @@
+.btn-group-lg {
+    text-align: center;
+    margin-bottom: 7px;
+
+}
+
+.sideways,
+.sideways:hover {
+    transform: rotate(-90deg);
+    margin-top: 100px;
+    float: left;
+}
+
+.chart {
+    padding: 30px;
+}

@@ -1,0 +1,35 @@
+.nav-item a {
+  color: #a7b8cb;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.nav-item a:hover {
+  border-bottom: solid 5px #e2cc3b;
+  color: #3e5569 !important;
+}
+
+.nav-item h3 {
+  color: #a7b8cb;
+}
+
+.selectedLink {
+  border-bottom: solid 5px #e2cc3b;
+  color: #3e5569 !important;
+}
+
+.provider-types {
+  line-height: 1.6;
+  font-size: 18px;
+}
+
+.provider-types span {
+  color: #3e5569;
+  font-weight: bold;
+}
+
+.row .col h3{
+    color: #3e5569;
+    margin-bottom: none;
+}

@@ -1,0 +1,195 @@
+
+ALTER PROC [dbo].[LookUp_GetAll]
+
+--@JSON NVARCHAR(MAX)
+AS
+
+/* ---- Created By Jonathan McCary 6/18/20 -------
+
+Execute [dbo].[LookUp_GetAll]  
+								
+
+*/
+
+    BEGIN
+
+        DECLARE @Temp dbo.AllTypes;
+        INSERT INTO @Temp
+               SELECT DaysOfWeek =
+               (
+                   SELECT Id, 
+                          [Day] as [Name]
+                   FROM dbo.DaysOfWeek FOR JSON PATH
+               ), 
+                      Roles =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.Roles FOR JSON PATH
+               ), 
+                      UserStatus =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.UserStatus FOR JSON PATH
+               ), 
+                      TokenTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.TokenTypes FOR JSON PATH
+               ), 
+                      UrlTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.UrlTypes FOR JSON PATH
+               ), 
+                      EventStatus =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.EventStatus FOR JSON PATH
+               ), 
+                      BlogTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.BlogTypes FOR JSON PATH
+               ), 
+                      EventTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.EventTypes FOR JSON PATH
+               ), 
+                      EntityTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.EntityTypes FOR JSON PATH
+               ), 
+                      GenderTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.GenderTypes FOR JSON PATH
+               ), 
+                      FilesTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.FileTypes FOR JSON PATH
+               ), 
+                      States =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.States FOR JSON PATH
+               ), 
+                      JobType =
+               (
+                   SELECT Id, 
+                          [Type] as [Name]
+                   FROM dbo.JobType FOR JSON PATH
+               ), 
+                      Languages =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.Languages FOR JSON PATH
+               ), 
+                      TitleTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.TitleTypes FOR JSON PATH
+               ), 
+                      ExpertiseTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.ExpertiseTypes FOR JSON PATH
+               ), 
+                      Tags =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.Tags FOR JSON PATH
+               ), 
+                      HelpNeedTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.HelpNeedsType FOR JSON PATH
+               ), 
+                      CareNeedsTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.CareNeedsTypes FOR JSON PATH
+               ), 
+                      ConcernTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.ConcernsTypes FOR JSON PATH
+               ), 
+                      Ratings =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.Ratings FOR JSON PATH
+               ), 
+                      PaymentTypes =
+               (
+                   SELECT Id, 
+                          [PaymentType] as [Name]
+                   FROM dbo.PaymentTypes FOR JSON PATH
+               ), 
+                      Certifications =
+               (
+                   SELECT Id, 
+                          [CertificationType] as [Name]
+                   FROM dbo.CertificationType FOR JSON PATH
+               ), 
+                      LicenseTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.LicenseTypes FOR JSON PATH
+               ), 
+                      LocationTypes =
+               (
+                   SELECT Id, 
+                          [Name]
+                   FROM dbo.LocationTypes FOR JSON PATH
+               );
+       
+	   SELECT DaysOfWeek, 
+               Roles, 
+               UserStatus, 
+               TokenTypes, 
+               UrlTypes, 
+               EventStatus, 
+               BlogTypes, 
+               EventTypes, 
+               EntityTypes, 
+               GenderTypes, 
+               FilesTypes, 
+               States, 
+               JobType, 
+               Languages, 
+               TitleTypes, 
+               ExpertiseTypes, 
+               Tags, 
+               HelpNeedTypes, 
+               CareNeedsTypes, 
+               ConcernTypes, 
+               Ratings, 
+               PaymentTypes, 
+               CertificateTypes, 
+               LicenseTypes, 
+               LocationTypes
+        FROM @Temp;
+    END;

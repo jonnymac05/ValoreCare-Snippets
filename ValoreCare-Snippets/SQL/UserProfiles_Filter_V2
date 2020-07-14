@@ -1,0 +1,417 @@
+
+ALTER PROC [dbo].[UserProfiles_Filter_V2] @PageIndex INT, 
+                                          @PageSize  INT, 
+                                          @JSON      NVARCHAR(MAX), 
+                                          @Latitude  FLOAT, 
+                                          @Longitude FLOAT, 
+                                          @Radius    INT
+AS
+
+/* ---- Created By Jonathan McCary 6/15/20 -------
+
+DECLARE @PageIndex INT= 0, 
+		@PageSize INT= 20, 
+		@_Latitude FLOAT = 28.613459,  --34.013901,
+		@_Longitude FLOAT = 4.11162, -- -118.289546,
+		@_Radius INT = 10000000,
+		--@JSON NVARCHAR(MAX)= '{"maxPrice": 199, "minPrice": 99}';  
+		@JSON NVARCHAR(MAX)= '{"expertiseIds": [1]}';
+		--@JSON NVARCHAR(MAX)= '{"minRating": 1}'; 
+		--@JSON NVARCHAR(MAX)= '{"certificationIds": [1,2,3]}'; 
+		--@JSON NVARCHAR(MAX)= '{"licenseIds": [1], "maxPrice":100}'; 
+		--@JSON NVARCHAR(MAX)= '{"careNeedsIds": [1,2,3]}'; 
+		--@JSON NVARCHAR(MAX)= '{"languageIds": [19]}'; 
+
+--@JSON NVARCHAR(MAX)= '{}';
+
+Execute dbo.UserProfiles_Filter_V2 @PageIndex
+								,@PageSize
+								,@JSON
+								,@_Latitude
+								,@_Longitude
+								,@_Radius
+
+*/
+
+    BEGIN
+
+        /*---Initial Setup: Break out all variables from the incoming JSON. If not passed in they will be NULL. ----*/
+
+        DECLARE @MaxPrice INT=
+        (
+            SELECT MaxPrice
+            FROM OPENJSON(@JSON) WITH(MaxPrice INT '$.maxPrice')
+        );
+        DECLARE @MinPrice INT=
+        (
+            SELECT MinPrice
+            FROM OPENJSON(@JSON) WITH(MinPrice INT '$.minPrice')
+        );
+        DECLARE @MinRating INT=
+        (
+            SELECT MinRating
+            FROM OPENJSON(@JSON) WITH(MinRating INT '$.minRating')
+        );
+        DECLARE @ExpertiseIds dbo.IdsTableNullable;
+        INSERT INTO @ExpertiseIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(ExpertiseIds NVARCHAR(MAX) '$.expertiseIds' AS JSON)
+                 OUTER APPLY OPENJSON(ExpertiseIds) WITH(Id INT '$')
+        );
+        DECLARE @CertificationIds dbo.IdsTableNullable;
+        INSERT INTO @CertificationIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(CertificationIds NVARCHAR(MAX) '$.certificationIds' AS JSON)
+                 OUTER APPLY OPENJSON(CertificationIds) WITH(Id INT '$')
+        );
+        DECLARE @LicenseIds dbo.IdsTableNullable;
+        INSERT INTO @LicenseIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(LicenseIds NVARCHAR(MAX) '$.licenseIds' AS JSON)
+                 OUTER APPLY OPENJSON(LicenseIds) WITH(Id INT '$')
+        );
+        DECLARE @CareNeedsIds dbo.IdsTableNullable;
+        INSERT INTO @CareNeedsIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(CareNeedsIds NVARCHAR(MAX) '$.careNeedsIds' AS JSON)
+                 OUTER APPLY OPENJSON(CareNeedsIds) WITH(Id INT '$')
+        );
+        DECLARE @LanguageIds dbo.IdsTableNullable;
+        INSERT INTO @LanguageIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(LanguageIds NVARCHAR(MAX) '$.languageIds' AS JSON)
+                 OUTER APPLY OPENJSON(LanguageIds) WITH(Id INT '$')
+        );
+        DECLARE @HelperNeedsIds dbo.IdsTableNullable;
+        INSERT INTO @HelperNeedsIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(HelperNeedsIds NVARCHAR(MAX) '$.helperNeedIds' AS JSON)
+                 OUTER APPLY OPENJSON(HelperNeedsIds) WITH(Id INT '$')
+        );
+		 DECLARE @ConcernsIds dbo.IdsTableNullable;
+        INSERT INTO @ConcernsIds(Id)
+        (
+            SELECT Id
+            FROM OPENJSON(@JSON) WITH(ConcernsIds NVARCHAR(MAX) '$.concernIds' AS JSON)
+                 OUTER APPLY OPENJSON(ConcernsIds) WITH(Id INT '$')
+        );
+
+        /*---These are the tables we will use to pass the information from one proc to another ----*/
+
+        DECLARE @Temp1 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp2 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp3 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp4 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp5 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp6 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp7 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp8 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp9 dbo.ProviderDetailsTable_V2;
+        DECLARE @Temp10 dbo.ProviderDetailsTable_V2;
+		DECLARE @Temp11 dbo.ProviderDetailsTable_V2;
+
+        /*---Step 1 Get All and put into table @Temp1 ----*/
+
+        INSERT INTO @Temp1
+        EXECUTE [dbo].[UserProfiles_SearchAllDetails_V3];
+
+        /*---Step 2: If maxPrice is passed in filter into @Temp2. Otherwise pass all into @Temp2. ----*/
+
+        IF(@MaxPrice IS NULL)
+            BEGIN
+                INSERT INTO @Temp2
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp1;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp2
+                EXECUTE [dbo].[UserProfiles_PassWithMaxPrice_V2] 
+                        @Temp1, 
+                        @MaxPrice;
+        END;
+
+        /*---Step 3: If minPrice is passed in filter into @Temp3. Otherwise pass all into @Temp3. ----*/
+
+        IF(@MinPrice IS NULL)
+            BEGIN
+                INSERT INTO @Temp3
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp2;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp3
+                EXECUTE [dbo].[UserProfiles_PassWithMinPrice_V2] 
+                        @Temp2, 
+                        @MinPrice;
+        END;
+
+        /*---Step 4: If minRating is passed in filter into @Temp4. Otherwise pass all into @Temp4. ----*/
+
+        IF(@MinRating IS NULL)
+            BEGIN
+                INSERT INTO @Temp4
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp3;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp4
+                EXECUTE [dbo].[UserProfiles_PassWithMinRating_V2] 
+                        @Temp3, 
+                        @MinRating;
+        END;
+
+        /*---Step 5: If expertiseIds are passed in filter into @Temp5. Otherwise pass all into @Temp5. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @ExpertiseIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp5
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp4;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp5
+                EXECUTE [dbo].[UserProfiles_PassWithExpertise_V2] 
+                        @Temp4, 
+                        @ExpertiseIds;
+        END;
+
+        /*---Step 6: If certificationIds are passed in filter into @Temp6. Otherwise pass all into @Temp6. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @CertificationIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp6
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp5;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp6
+                EXECUTE [dbo].[UserProfiles_PassWithCertification_V2] 
+                        @Temp5, 
+                        @CertificationIds;
+        END;
+
+        /*---Step 7: If licenseIds are passed in filter into @Temp7. Otherwise pass all into @Temp7. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @LicenseIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp7
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp6;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp7
+                EXECUTE [dbo].[UserProfiles_PassWithLicenses_V2] 
+                        @Temp6, 
+                        @LicenseIds;
+        END;
+
+        /*---Step 8: If careNeedsIds are passed in filter into @Temp8. Otherwise pass all into @Temp8. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @CareNeedsIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp8
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp7;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp8
+                EXECUTE [dbo].[UserProfiles_PassWithCareNeeds_V2] 
+                        @Temp7, 
+                        @CareNeedsIds;
+        END;
+
+        /*---Step 9: If careNeedsIds are passed in filter into @Temp9. Otherwise pass all into @Temp9. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @LanguageIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp9
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp8;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp9
+                EXECUTE [dbo].[UserProfiles_PassWithLanguages_V2] 
+                        @Temp8, 
+                        @LanguageIds;
+        END;
+
+        /*---Step 10: If helperNeedsIds are passed in filter into @Temp10. Otherwise pass all into @Temp10. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @HelperNeedsIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp10
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp9;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp10
+                EXECUTE [dbo].[UserProfiles_PassWithHelperNeeds] 
+                        @Temp9, 
+                        @HelperNeedsIds;
+        END;
+
+ /*---Step 11: If concernsIds are passed in filter into @Temp11. Otherwise pass all into @Temp11. ----*/
+
+        IF(
+        (
+            SELECT TOP 1 Id
+            FROM @ConcernsIds
+        ) IS NULL)
+            BEGIN
+                INSERT INTO @Temp11
+                EXECUTE [dbo].[UserProfiles_PassAllDetails_V2] 
+                        @Temp10;
+        END;
+            ELSE
+            BEGIN
+                INSERT INTO @Temp11
+                EXECUTE [dbo].[UserProfiles_PassWithConcerns] 
+                        @Temp10, 
+                        @ConcernsIds;
+        END;
+
+/*---Step 12: Filter by geographical radius and add a distance column. 
+Filter additional provider locations to return the closest.  Put it all into a temp table called #Table----*/
+
+        DECLARE @SearchPoint GEOGRAPHY= geography ::Point(@Latitude, @Longitude, 4326);
+        WITH provider_data
+             AS (SELECT T.Id, 
+                        T.UserId, 
+                        T.FirstName, 
+                        T.LastName, 
+                        T.Mi, 
+                        T.AvatarUrl, 
+                        T.DateCreated, 
+                        T.DateModified, 
+                        T.Phone, 
+                        T.Title, 
+                        T.Summary, 
+                        T.Bio, 
+                        T.Price, 
+                        T.IsActive, 
+                        T.Certifications, 
+                        T.Expertise, 
+                        T.Licenses, 
+                        T.Languages, 
+                        T.Locations, 
+                        T.CareNeeds, 
+                        T.Concerns, 
+                        T.Ratings, 
+                        T.AverageRating, 
+                        T.HelperNeeds, 
+                        T.ExperienceDetails, 
+                        Distance = (@SearchPoint.STDistance(geography::Point([Latitude], [Longitude], 4326)))
+                 FROM @Temp11 AS T
+                      JOIN dbo.Locations AS L ON L.CreatedBy = T.UserId
+                 WHERE(@SearchPoint.STDistance(geography::Point([Latitude], [Longitude], 4326)) <= @Radius)
+
+            )
+             SELECT DISTINCT 
+                    Id, 
+                    UserId, 
+                    FirstName, 
+                    LastName, 
+                    Mi, 
+                    AvatarUrl, 
+                    DateCreated, 
+                    DateModified, 
+                    Phone, 
+                    Title, 
+                    Summary, 
+                    Bio, 
+                    Price, 
+                    IsActive, 
+                    Certifications, 
+                    Expertise, 
+                    Licenses, 
+                    Languages, 
+                    Locations, 
+                    CareNeeds, 
+                    Concerns, 
+                    Ratings, 
+                    AverageRating, 
+                    HelperNeeds, 
+                    ExperienceDetails, 
+                    Distance
+             INTO #Table
+             FROM provider_data d
+             WHERE Distance =
+             (
+                 SELECT MIN(Distance)
+                 FROM provider_data d0
+                 WHERE d.UserId = d0.UserId
+             );
+
+        /*---Step 12: Turn the temp table #Table into a paginated response----*/
+
+        DECLARE @Offset INT= @PageIndex * @PageSize;
+        SELECT Id, 
+               UserId, 
+               FirstName, 
+               LastName, 
+               Mi, 
+               AvatarUrl, 
+               DateCreated, 
+               DateModified, 
+               Phone, 
+               Title, 
+               Summary, 
+               Bio, 
+               Price, 
+               IsActive, 
+               Certifications, 
+               Expertise, 
+               Licenses, 
+               Languages, 
+               Locations, 
+               CareNeeds, 
+               Concerns, 
+               Ratings, 
+               AverageRating, 
+               HelperNeeds, 
+               ExperienceDetails, 
+               Distance,
+			   TotalCount = COUNT (1) OVER ()
+        FROM #Table
+        ORDER BY Distance ASC
+        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+    END;

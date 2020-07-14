@@ -1,0 +1,56 @@
+
+ALTER proc [dbo].[Comments_Insert]
+			@Id int OUTPUT
+		   ,@Subject nvarchar(50)
+           ,@Text nvarchar(3000) 
+           ,@ParentId int = null
+           ,@EntityTypeId int 
+           ,@EntityId int
+           ,@CreatedBy int
+           ,@isDeleted bit
+
+as
+
+/* -------- Test Code --------
+    Declare @Id int = 1
+    Declare @Subject nvarchar(50) = 'Thank you ValoreCare for making this possible'
+           ,@Text nvarchar(3000) = 'I have always wanted to work directly like this'
+           ,@ParentId int = 0
+           ,@EntityTypeId int = 1
+           ,@EntityId int = 1
+           ,@CreatedBy int = 7
+           ,@isDeleted bit = 0
+    
+    Execute dbo.Comments_Insert
+                             @Id 
+                            ,@Subject
+                            ,@Text
+                            ,@ParentId
+                            ,@EntityTypeId
+                            ,@EntityId
+                            ,@CreatedBy
+                            ,@isDeleted	
+	
+	Select *
+    From dbo.Comments
+   
+*/
+BEGIN
+INSERT INTO [dbo].[Comments]
+           ([Subject]
+           ,[Text]
+           ,[ParentId]
+           ,[EntityTypeId]
+           ,[EntityId]
+           ,[CreatedBy]
+           ,[IsDeleted])
+     VALUES
+            (@Subject
+			,@Text
+			,@ParentId
+			,@EntityTypeId
+			,@EntityId
+			,@CreatedBy
+			,@isDeleted)
+		Set @Id = SCOPE_IDENTITY()
+END

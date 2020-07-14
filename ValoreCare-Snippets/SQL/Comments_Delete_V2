@@ -1,0 +1,54 @@
+
+ALTER proc [dbo].[Comments_Delete_V2]
+			@Id int
+
+as
+
+/*
+				---- TEST CODE ---- Jonathan McCary 5/20/20
+
+				Declare @Id int = 316
+
+				SELECT *
+				FROM dbo.Comments
+				WHERE Id = @Id OR ParentId = @Id
+
+				EXECUTE dbo.Comments_Delete_V2
+						@Id
+
+				SELECT *
+				FROM dbo.Comments
+				WHERE Id = @Id OR ParentId = @Id
+
+*/
+BEGIN
+
+WITH cte_commentChildren AS (
+    SELECT       
+       [Id]
+      ,[IsDeleted]      
+    FROM       
+         dbo.Comments
+    WHERE Id = @Id
+    UNION ALL
+    SELECT 
+       Co.[Id]
+      ,Co.[IsDeleted] 
+    FROM 
+        dbo.Comments as Co
+        INNER JOIN cte_commentChildren as Cc 
+            ON Cc.id = Co.ParentId
+)
+
+UPDATE
+    dbo.Comments
+SET
+    dbo.Comments.IsDeleted = 1
+FROM
+    dbo.Comments as Co
+INNER JOIN
+    cte_commentChildren as Ch
+ON 
+    Co.Id = Ch.Id; 
+
+END;
