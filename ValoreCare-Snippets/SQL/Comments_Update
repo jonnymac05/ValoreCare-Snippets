@@ -1,0 +1,54 @@
+
+ALTER proc [dbo].[Comments_Update]
+			@Id int 
+		   ,@Subject nvarchar(50)
+           ,@Text nvarchar(3000) 
+           ,@ParentId int 
+           ,@EntityTypeId int 
+           ,@EntityId int
+		   ,@CreatedBy int
+           ,@isDeleted bit 
+as
+
+/* -------- Joanthan McCary Modified 5/20/20 --------
+
+    Declare @Id int = 1;
+    Declare @Subject nvarchar(50) = 'My new edited Comment'
+           ,@Text nvarchar(3000) = '2nd Best Comment so far if you ask me'
+           ,@ParentId int = null
+           ,@EntityTypeId int = 2
+           ,@EntityId int = 2
+		   ,@CreatedBy int = 2
+           ,@isDeleted bit = 0
+    
+    Execute dbo.Comments_Update
+                             @Id 
+                            ,@Subject
+                            ,@Text
+                            ,@ParentId
+                            ,@EntityTypeId
+                            ,@EntityId
+							,@CreatedBy
+                            ,@isDeleted
+    Select *
+    From dbo.Comments
+    Where Id = @Id
+	
+*/
+
+BEGIN
+
+				Declare @DateModified datetime2 = getutcdate()		
+
+				Update [dbo].[Comments]
+				SET			[Subject] = @Subject
+						   ,[Text] = @Text
+						   ,[ParentId] = @ParentId
+						   ,[EntityId] = @EntityId
+						   ,[isDeleted] = @isDeleted
+						   ,[CreatedBy] = @CreatedBy
+						   ,[DateModified] = @DateModified
+
+				Where		Id = @Id
+END
+

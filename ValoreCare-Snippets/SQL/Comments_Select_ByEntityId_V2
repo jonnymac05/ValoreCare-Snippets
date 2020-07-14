@@ -1,0 +1,46 @@
+
+ALTER proc [dbo].[Comments_Select_ByEntityId_V2]
+				@EntityId int
+			   ,@EntityTypeId int
+
+as 
+
+/*
+-----Jonathan McCary 5/20/20-----
+
+			Declare @EntityId int = 1;
+			Declare @EntityTypeId int = 1;
+
+			Execute [dbo].[Comments_Select_ByEntityId_V2]
+							@EntityId
+						   ,@EntityTypeId
+
+*/
+
+BEGIN
+
+
+			SELECT	   C.[Id]
+					  ,C.[Subject]
+					  ,C.[Text]
+					  ,C.[ParentId]
+					  ,C.[EntityTypeId]
+					  ,C.[EntityId]
+					  ,C.[DateCreated]
+					  ,C.[DateModified]
+					  ,C.[IsDeleted]
+					  ,U.FirstName
+					  ,U.LastName
+					  ,U.AvatarUrl
+					  ,U.UserId as CreatedBy
+					  ,TotalCount = COUNT(1) OVER()
+ 			FROM	   [dbo].[Comments] as C
+						JOIN dbo.UserProfiles as U on C.CreatedBy = U.UserId
+			WHERE C.[EntityId] = @EntityId
+			AND C.[EntityTypeId] = @EntityTypeId
+			AND C.IsDeleted = 0
+			ORDER BY C.DateCreated
+
+
+
+END

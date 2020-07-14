@@ -1,0 +1,117 @@
+.container-main {
+    text-align: center;
+    padding-top: 10px;
+}
+
+.filter-options-container {
+    scrollbar-width: thin;
+    height: 90vh;
+    overflow-y: scroll;
+}
+
+.filter-options-container::-webkit-scrollbar {
+    display: none;
+  }
+
+.providercard {
+    margin-left: 60px;
+    text-align: center;
+    height: 300px;
+    box-shadow: slategray;
+    line-height: 10px;
+}
+
+.number-input {
+    width: 30%;
+}
+
+.checkbox-div {
+    text-align: left;
+    padding-left: 10px;
+}
+
+.checkbox-input {
+    margin-right: 3px;
+}
+
+.dropdown-toggle {
+    margin-bottom: 10px;
+}
+
+.button-div {
+    text-align: center;
+}
+
+img {
+    margin-bottom: 10px;
+}
+
+.vertical-center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.dropright,
+.dropleft {
+    margin-top: 10px;
+    float: left;
+
+}
+
+.side-toggle {
+    background-color: rgb(219, 219, 219);
+    border-color: rgb(219, 219, 219);
+    height: 634px;
+}
+
+.pagination {
+    display: flex;
+    text-align: center;
+    padding-top: 15px;
+    width: 100%;
+    justify-content: center;
+}
+
+.pagination-inner {
+    display: inline-block;
+}
+
+.providers-container {
+    display: flex;
+    justify-content: center;
+    margin-left: 10px;
+
+}
+
+.zip-submit-side {
+    margin-top: 20px;
+    margin-bottom: 10px;
+
+}
+
+.zip-field,
+.radius-field {
+    margin-top: 10px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.zip-div {
+    justify-content: center;
+}
+
+.initial-form {
+    padding-top: 30px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 40px;
+    margin-top: 100px;
+    display: inline-block;
+    width: 30%;
+    text-align: center;
+    opacity: 0.95;
+}
