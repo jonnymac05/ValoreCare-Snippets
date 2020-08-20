@@ -1,6 +1,6 @@
 # ValoreCare-Snippets
 
-Small selection of code contributed to ValoreCare project.
+Small selection of code contributed to the ValoreCare project.
 
 ---
 
