@@ -7,7 +7,6 @@ Small selection of code contributed to the ValoreCare project.
 ## Key Technology Used
 
 - .Net Web Api
-- ADO .Net
 - Microsoft SQL Server
 - ReactJS
 - Bootstrap 4
