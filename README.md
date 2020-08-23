@@ -4,7 +4,7 @@ Small selection of code contributed to the ValoreCare project.
 
 ---
 
-## Key Technology Used
+## Key Technologies Used
 
 - .Net Web Api
 - Microsoft SQL Server
